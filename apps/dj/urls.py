@@ -4,5 +4,5 @@ from . import views
 app_name = "dj"
 
 urlpatterns = [
-    path("dj/load-artists", views.load_artists)
+    path("dj/beatport", views.beatport_techno_top100_scraper)
 ]
