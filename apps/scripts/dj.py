@@ -1,5 +1,5 @@
 
-import django_init
+# import django_init
 from dj.models import Artist, SongArtistStateEnum
 
 
