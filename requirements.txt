@@ -1,2 +1,4 @@
 django
 mutagen
+selenium
+beautifulsoup4

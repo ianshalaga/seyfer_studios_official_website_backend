@@ -26,12 +26,15 @@ def mp3_load_metadata_into_db():
                 name=artist_name, defaults={"state": SongArtistStateEnum.NEW})
             artists.append(artist)
 
-        mp3_song, _ = Song.objects.get_or_create(
+        mp3_song, created = Song.objects.get_or_create(
             title=mp3_title, defaults={"state": SongArtistStateEnum.YES})
 
         mp3_song.artists.add(*artists)
 
-        print(f"✔ Cargado: {mp3_title} por {", ".join(mp3_artists)}")
+        if created:
+            print(f"✅ Added: {mp3_title} by {", ".join(mp3_artists)}")
+        else:
+            print(f"⚠ Existing: {mp3_title} by {", ".join(mp3_artists)}")
 
 
 def get_artists_by_song(song_title: str):
