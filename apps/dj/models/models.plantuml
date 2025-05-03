@@ -1,0 +1,29 @@
+@startuml dj
+
+' Enums
+
+Enum SongArtistState {
+    YES = "Allowed"
+    BAN = "Not Allowed"
+    NEW = "New"
+}
+
+' Classes
+
+class Song {
+    - code: UUID
+    - title: String
+    - state: SongArtistState
+}
+
+class Artist {
+    - code: UUID
+    - name: String
+    - state: SongArtistState
+}
+
+' Relationships
+
+Song "1..*" -- "1..*" Artist
+
+@enduml

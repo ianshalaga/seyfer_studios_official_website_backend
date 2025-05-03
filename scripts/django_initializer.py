@@ -1,20 +1,25 @@
+# Standar Modules
 import os
 import sys
+# Django
 import django
-# from pathlib import Path
 
+this_file_path: str = __file__
+this_file_folder: str = os.path.dirname(this_file_path)
+move_up_folder: str = "../"
+up_folder: str = os.path.join(this_file_folder, move_up_folder)
+# Base Directory Absolute Path / Repository Folder
+BASE_DIR: str = os.path.abspath(up_folder)
 
-# BASE_DIR = Path(__file__).resolve().parent.parent
-BASE_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '../'))
-
-if BASE_DIR not in sys.path:
-    # sys.path.insert(0, BASE_DIR)
-    sys.path.append(BASE_DIR)
+if BASE_DIR not in sys.path:  # Avoid repeating the path
+    sys.path.append(BASE_DIR)  # or sys.path.insert(0, BASE_DIR)
 
 
 class DjangoInitializer:
-    _instance = None  # Atributo de clase
+    '''
+    Singleton class to initialize Django environment
+    '''
+    _instance: object | None = None  # Class attribute
 
     def __new__(cls):
         if cls._instance is None:
@@ -25,7 +30,7 @@ class DjangoInitializer:
     def _setup_django(self):
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
         django.setup()
-        print("✅ Entorno de Django inicializado.")
+        print("✅ Django environment initialized.")
 
 
-DjangoInitializer()
+DjangoInitializer()  # Django environment initialization

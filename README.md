@@ -16,6 +16,11 @@ Seyfer Studios Official Website Backend code.
 
 - [mutagen](https://mutagen.readthedocs.io/en/latest/): es un módulo de [Python](https://www.python.org/) para manejar metadatos de archivos de audio. Es compatible con archivos de audio ASF, FLAC, MP4, Monkey’s Audio, MP3, Musepack, Ogg Opus, Ogg FLAC, Ogg Speex, Ogg Theora, Ogg Vorbis, True Audio, WavPack, OptimFROG y AIFF. Soporta todas las versiones de ID3v2, y analiza todos los cuadros estándar de ID3v2.4. Puede leer cabeceras Xing para calcular con precisión la tasa de bits y la duración de archivos MP3. Las etiquetas ID3 y APEv2 se pueden editar independientemente del formato de audio. También puede manipular flujos Ogg a nivel de paquetes o páginas individuales.
 
-- [Selenium](https://www.selenium.dev/)
+- [Selenium](https://www.selenium.dev/): es una herramienta de automatización de navegadores web. Permite simular el comportamiento de un usuario real al interactuar con una página web, lo cual es útil para tareas como:
 
-- [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/):
+  - Automatizar pruebas de interfaz de usuario (UI).
+  - Rellenar formularios automáticamente.
+  - Extraer contenido dinámico que depende de JavaScript.
+  - Navegar por sitios como si fueras un humano (clics, scroll, etc.).
+
+- [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/): es una biblioteca de [Python](https://www.python.org/) para extraer datos de archivos **HTML** y **XML**. Funciona con tu analizador (_parser_) favorito para ofrecer formas intuitivas de navegar, buscar y modificar el árbol de análisis. Comúnmente ahorra a los programadores horas o incluso días de trabajo.
