@@ -17,6 +17,57 @@ EASY_ID3_TAG_TITLE: str = "title"
 EASY_ID3_TAG_ARTIST: str = "artist"
 
 
+class BeatportSong():
+    def __init__(self, title: str, variation: str, url: str, artists: list[dict] = []):
+        self.__title: str = title
+        self.__variation: str = variation
+        self.__url: str = url
+        self.__artists = artists
+
+    def name(self) -> str:
+        try:
+            name: str = ""
+            if "(" in self.__title and ")" in self.__title:
+                name = " ".join([self.__title, f"[{self.__variation}]"])
+            else:
+                name = " ".join([self.__title, f"({self.__variation})"])
+            return name
+        except Exception as e:
+            print(
+                f"{__class__} | {__name__} | Ocurrió un error inesperado: {repr(e)}")
+
+    def get_url(self):
+        return self.__url
+
+    def set_artists(self, artists: list[dict]):
+        self.__artists = artists
+
+    def serialize(self):
+        return {
+            "name": self.name(),
+            "url": self.__url,
+            "artists": self.__artists
+        }
+
+
+class BeatportArtist():
+    def __init__(self, name: str, url: str):
+        self.__name: str = name
+        self.__url: str = url
+
+    def get_name(self):
+        return self.__name
+
+    def get_url(self):
+        return self.__url
+
+    def serialize(self):
+        return {
+            "name": self.__name,
+            "url": self.__url,
+        }
+
+
 def mp3_load_metadata_into_db() -> None:
     try:
         for file in os.listdir(MUSIC_MP3_FOLDER):
@@ -49,6 +100,7 @@ def mp3_load_metadata_into_db() -> None:
             else:
                 print(f"⚠ Existing: {mp3_title} by {", ".join(mp3_artists)}")
     except Exception as e:
+        # print(f"{__name__}: {e}")
         print(f"{mp3_load_metadata_into_db.__name__}: {e}")
 
 
@@ -59,15 +111,18 @@ def get_artists_by_song(song_title: str) -> None:
         f"Artistas de {song_title}: {', '.join([artist.name for artist in artists])}")
 
 
-def selenium_request(url: str, delay: int = 5) -> str:
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    browser = webdriver.Chrome(options=options)
-    browser.get(url)
-    time.sleep(delay)  # Waiting for JS to load
-    html = browser.page_source
-    browser.quit()
-    return html
+def request_dynamic(url: str, delay: int = 5) -> str:
+    try:
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless')
+        browser = webdriver.Chrome(options=options)
+        browser.get(url)
+        time.sleep(delay)  # Waiting for JS to load
+        html = browser.page_source
+        browser.quit()
+        return html
+    except Exception as e:
+        print(f"{__name__} | Ocurrió un error inesperado: {repr(e)}")
 
 # get_artists_by_song("Escape (John Summit Remix) [Extended Mix]")
 

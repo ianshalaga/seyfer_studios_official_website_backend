@@ -2,7 +2,7 @@
 from django.http import JsonResponse
 from .models import Artist, SongArtistStateEnum
 from bs4 import BeautifulSoup
-from ..utilities.scripts.dj import selenium_request
+from ..utilities.apps.dj import request_dynamic, BeatportSong, BeatportArtist
 
 
 # Create your views here.
@@ -11,31 +11,40 @@ from ..utilities.scripts.dj import selenium_request
 #     HTML = f.read()
 
 BEATPORT_URL_BASE = "https://www.beatport.com"
-BEATPORT_TECHNO_TOP100_URL = BEATPORT_URL_BASE + \
-    "/genre/melodic-house-techno/90/top-100"
+BEATPORT_TECHNO_TOP100_URL = "".join(
+    [BEATPORT_URL_BASE, "/genre/melodic-house-techno/90/top-100"])
 
 
 def beatport_techno_top100_scraper(request):
-    html = selenium_request(BEATPORT_TECHNO_TOP100_URL)
+    html: str = request_dynamic(BEATPORT_TECHNO_TOP100_URL)
 
     soup = BeautifulSoup(html, "html.parser")
+
     songs_blocks = soup.select("div.Lists-shared-style__MetaRow-sc-d366b33c-4")
-    song_links_list = list()
+    songs_list: list = list()
     for song_block in songs_blocks:
-        song_link = BEATPORT_URL_BASE + song_block.select_one("a").get("href")
-        song_links_list.append(song_link)
-        print(song_link)
+        # Songs
+        song_url = BEATPORT_URL_BASE + song_block.select_one("a").get("href")
         song_tag = song_block.select_one(
             "span.Lists-shared-style__ItemName-sc-d366b33c-7")
-        song_name_and_extra = list(song_tag.stripped_strings)
+        song_title_variation = list(song_tag.stripped_strings)
+        song_title = song_title_variation[0]
+        song_variation = song_title_variation[1]
+        beatport_song = BeatportSong(song_title, song_variation, song_url)
+        # Artists
         artists_block = song_block.select_one("div.ArtistNames-sc-72fc6023-0")
-        artist = list()
+        artists_list = list()
         for a in artists_block.select("a"):
-            artist.append({a.get("title"): BEATPORT_URL_BASE + a.get("href")})
+            beatport_artist = BeatportArtist(
+                a.get("title"), BEATPORT_URL_BASE + a.get("href"))
+            artists_list.append(beatport_artist.serialize())
+        #
+        beatport_song.set_artists(artists_list)
+        songs_list.append(beatport_song.serialize())
 
-    context = {"context": soup}
+    # context = {"context": soup}
     # return render(request, "dj/base.html", context)
-    return JsonResponse(song_links_list, safe=False)
+    return JsonResponse(songs_list, safe=False)
 
     # Esta función tiene que scrapear las canciones del top 100 de beatport.
     # Debe dar los enlaces a las canciones.
