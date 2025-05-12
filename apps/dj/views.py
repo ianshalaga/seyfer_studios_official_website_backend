@@ -1,9 +1,8 @@
 # from django.shortcuts import render
 from django.http import JsonResponse
 from .models import Artist, SongArtistStateEnum
-from selenium import webdriver
 from bs4 import BeautifulSoup
-import time
+from ..utilities.scripts.dj import selenium_request
 
 
 # Create your views here.
@@ -14,17 +13,6 @@ import time
 BEATPORT_URL_BASE = "https://www.beatport.com"
 BEATPORT_TECHNO_TOP100_URL = BEATPORT_URL_BASE + \
     "/genre/melodic-house-techno/90/top-100"
-
-
-def selenium_request(url: str, delay: int = 5) -> str:
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    browser = webdriver.Chrome(options=options)
-    browser.get(url)
-    time.sleep(delay)  # Waiting for JS to load
-    html = browser.page_source
-    browser.quit()
-    return html
 
 
 def beatport_techno_top100_scraper(request):

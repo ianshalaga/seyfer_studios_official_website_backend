@@ -1,13 +1,14 @@
-# My Modules
-import django_initializer
 # Standar Modules
 import os
 import sys
+import time
 # Django Models
-from apps.dj.models import Artist, Song, SongArtistStateEnum
+from ...dj.models import Artist, Song, SongArtistStateEnum
 # Mutagen
 from mutagen.easyid3 import EasyID3
 from mutagen.mp3 import MP3
+# Selenium
+from selenium import webdriver
 
 MUSIC_MP3_PATH: str = "F:/DESCARGAS/Música/@Ready/Melodic House & Techno"
 MUSIC_MP3_FOLDER: str = os.path.abspath(MUSIC_MP3_PATH)
@@ -58,11 +59,22 @@ def get_artists_by_song(song_title: str) -> None:
         f"Artistas de {song_title}: {', '.join([artist.name for artist in artists])}")
 
 
+def selenium_request(url: str, delay: int = 5) -> str:
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    browser = webdriver.Chrome(options=options)
+    browser.get(url)
+    time.sleep(delay)  # Waiting for JS to load
+    html = browser.page_source
+    browser.quit()
+    return html
+
 # get_artists_by_song("Escape (John Summit Remix) [Extended Mix]")
 
-if __name__ == "__main__":
-    if len(sys.argv) <= 1:
-        print(
-            f"Usage: python {sys.argv[0]} [options]")
-    if "-mp3-load" in sys.argv:
-        mp3_load_metadata_into_db()
+
+# if __name__ == "__main__":
+#     if len(sys.argv) <= 1:
+#         print(
+#             f"Usage: python {sys.argv[0]} [options]")
+#     if "-mp3-load" in sys.argv or "-ml" in sys.argv:
+#         mp3_load_metadata_into_db()
