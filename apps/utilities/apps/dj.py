@@ -33,6 +33,27 @@ ARTISTS_BAN_FILE_PATH = os.path.abspath(os.path.join(
     os.path.dirname(__file__), "files", "artists_ban.txt"))
 
 
+class ScrapHtml():
+    def __init__(self, tag, css_class):
+        self.__tag = tag
+        self.__css_class = css_class
+
+    def get_tag(self):
+        return self.__tag
+
+    def get_css_class(self):
+        return self.__css_class
+
+    def set_tag(self, tag):
+        self.__tag = tag
+
+    def set_css_class(self, css_class):
+        self._css_class = css_class
+
+    def serialize(self):
+        return ".".join([self.__tag, self.__css_class])
+
+
 class BeatportSong():
     def __init__(self, title: str, variation: str, url: str, artists: list[dict] = []):
         self.__title: str = title
@@ -147,6 +168,12 @@ def beatport_songs_artists_scraper(beatport_url: str):
         songs_yes: list[str] = get_db_songs_allowed()
         songs_ban: list[str] = get_db_songs_not_allowed()
 
+        scrap_html_songs_blocks = ScrapHtml(
+            "div", "Lists-shared-style__MetaRow-sc-cd3f7e11-4")
+        scrap_html_artist_block = ScrapHtml("div", "ArtistNames-sc-72fc6023-0")
+        scrap_html_tag_span = ScrapHtml(
+            "span", "Lists-shared-style__ItemName-sc-cd3f7e11-7")
+
         songs_allowed: int = 0
         songs_not_allowed: int = 0
 
@@ -156,12 +183,13 @@ def beatport_songs_artists_scraper(beatport_url: str):
             html, "html.parser")  # Parse HTML with bs4
 
         songs_html_blocks = soup.select(
-            "div.Lists-shared-style__MetaRow-sc-d366b33c-4")  # Get all songs html blocks
+            scrap_html_songs_blocks.serialize())  # Get all songs html blocks
+
         songs_list: list[dict] = list()
 
         for song_html_block in songs_html_blocks:  # For each song html block
             artists_html_block = song_html_block.select_one(
-                "div.ArtistNames-sc-72fc6023-0")  # Get artists html block
+                scrap_html_artist_block.serialize())  # Get artists html block
 
             artists_list: list[dict] = list()
             allowed_song: bool = False
@@ -185,7 +213,7 @@ def beatport_songs_artists_scraper(beatport_url: str):
             song_url = "".join(
                 [BEATPORT_URL_BASE, song_html_block.select_one("a").get("href")])
             song_html_tag_span = song_html_block.select_one(
-                "span.Lists-shared-style__ItemName-sc-d366b33c-7")
+                scrap_html_tag_span.serialize())
             song_title_variation: list[str] = list(
                 song_html_tag_span.stripped_strings)
             song_title: str = song_title_variation[0]
