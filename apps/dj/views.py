@@ -4,68 +4,66 @@ from django.http import JsonResponse
 from .models import Artist, SongArtistStateEnum
 from termcolor import cprint
 from ..utilities.apps import dj
+from ..utilities.apps.exceptions import *
 
 
 # Create your views here.
 
 
 def beatport_techno_top100_scraper(request):
-    # try:
-    cprint(f"Beatport Techno Top 100 Scraping started", "blue")
-    songs_list: list = dj.beatport_songs_artists_scraper(
-        dj.BEATPORT_TECHNO_TOP100_URL)
+    try:
+        cprint(f"Beatport Techno Top 100 Scraping started", "blue")
+        songs_list: list = dj.beatport_songs_artists_scraper(
+            dj.BEATPORT_TECHNO_TOP100_URL)
 
-    cprint(songs_list, "cyan")
+        artists_ban: list[str] = dj.get_db_artists_banned()
 
-    artists_ban: list[str] = dj.get_db_artists_banned()
+        artists_url_set: set = set()
 
-    artists_url_set: set = set()
-    for song in songs_list:
-        for artist in song["artists"]:
-            if artist["name"] not in artists_ban:
-                artists_url_set.add(artist["url"])
-    artists_url_list = list(artists_url_set)
-
-    songs_list_by_artist: list = list()
-
-    for i, artist_url in enumerate(artists_url_list[:1]):
-        cprint(
-            f"Scraping started | {i+1}/{len(artists_url_list)} | {artist_url}", "yellow")
-        songs_list_by_artist.extend(
-            dj.beatport_songs_artists_scraper(artist_url))
-
-    cprint(songs_list_by_artist, "magenta")
-
-    # @@@@
-    # Obtener todos los artistas sin repetición desde song_list y desde song_list_by_artist
-    songs_list.extend(songs_list_by_artist)
-    cprint(songs_list, "cyan")
-    artists_names_set: set[str] = {artist["name"]
-                                   for song in songs_list for artist in song["artists"]}
-    artists_names_list: list[str] = list(artists_names_set)
-
-    response_dict_sets: dict = defaultdict(set)
-    for artist in artists_names_list:
         for song in songs_list:
-            if artist in [art["name"] for art in song["artists"]]:
-                response_dict_sets[artist].add(song["url"])
+            for artist in song["artists"]:
+                if artist["name"] not in artists_ban:
+                    artists_url_set.add(artist["url"])
 
-    response_dict_lists: dict = dict(sorted({artist: sorted(
-        songs) for artist, songs in response_dict_sets.items()}.items()))
-    # @@@@
+        artists_url_list = list(artists_url_set)
 
-    # songs_definitive_set: set[str] = {song["url"]
-    #                                   for song in songs_list_by_artist}
+        songs_list_by_artist: list = list()
 
-    # songs_definitive_set.update({song["url"] for song in songs_list})
-    # songs_definitive_list: list[str] = list(songs_definitive_set)
+        for i, artist_url in enumerate(artists_url_list):
+            cprint(
+                f"Scraping started | {i+1}/{len(artists_url_list)} | {artist_url}", "yellow")
+            songs_list_by_artist.extend(
+                dj.beatport_songs_artists_scraper(artist_url))
 
-    # return JsonResponse(songs_definitive_list, safe=False)
-    return JsonResponse(response_dict_lists)
-    # except Exception as e:
-    #     cprint(
-    #         f"File: {__name__} | {beatport_techno_top100_scraper.__name__} | Error: {repr(e)}")
-    #     return JsonResponse({"Error": f"{e}"})
+        songs_list.extend(songs_list_by_artist)
+
+        artists_names_set: set[str] = {
+            artist["name"]
+            for song in songs_list
+            for artist in song["artists"]
+            if artist["name"] not in artists_ban
+        }
+
+        artists_names_list: list[str] = list(artists_names_set)
+
+        response_dict_sets: dict = defaultdict(set)
+        for artist in artists_names_list:
+            for song in songs_list:
+                if artist in [art["name"] for art in song["artists"]]:
+                    response_dict_sets[artist].add(song["url"])
+
+        response_dict_lists: dict = dict(sorted({artist: sorted(
+            songs) for artist, songs in response_dict_sets.items()}.items()))
+
+        return JsonResponse(response_dict_lists)  # safe=False
+    except (DynamicRequestError, ScraperError, DatabaseAccessError) as e:
+        error: str = f"{__name__} | {beatport_techno_top100_scraper.__name__} | {e}"
+        cprint(error, "red")
+        return JsonResponse({"error": error})
+    except Exception as e:
+        error: str = f"{__name__} | {beatport_techno_top100_scraper.__name__} | {e}"
+        cprint(error, "red")
+        return JsonResponse({"error": error})
 
 
 def load_yes_artists_into_db(request):
