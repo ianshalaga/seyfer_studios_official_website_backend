@@ -1,0 +1,89 @@
+{% extends 'dj/base.html' %} {% block content %}
+
+<section class="space-y-10">
+  <!-- 🎧 Bienvenida DJ -->
+  <div class="text-center">
+    <h2 class="text-4xl font-bold text-lime-400 mb-2">🎛️ Zona DJ</h2>
+    <p class="text-gray-300 text-lg">
+      Explora herramientas para analizar, organizar y potenciar tu biblioteca
+      musical con inteligencia.
+    </p>
+  </div>
+
+  <!-- 📦 Funcionalidades principales -->
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+    <!-- 🥇 Beatport -->
+    <div
+      class="bg-gray-800 rounded-xl p-6 shadow-lg border border-yellow-400/30 hover:border-yellow-400 transition"
+    >
+      <h3 class="text-xl font-bold text-yellow-400 mb-2">
+        🥇 Beatport Top 100
+      </h3>
+      <p class="text-gray-300">
+        📈 Scrapeo automático de los charts de Beatport. Mantén tu colección
+        actualizada con lo más popular del género.
+      </p>
+    </div>
+
+    <!-- 🎵 Canciones -->
+    <div
+      class="bg-gray-800 rounded-xl p-6 shadow-lg border border-blue-500/30 hover:border-blue-500 transition"
+    >
+      <h3 class="text-xl font-bold text-blue-400 mb-2">🎵 Tus Canciones</h3>
+      <p class="text-gray-300">
+        📂 Administra, filtra y visualiza tus pistas musicales. Agrega BPM,
+        tonalidad, tags y más.
+      </p>
+    </div>
+
+    <!-- 📊 Análisis -->
+    <div
+      class="bg-gray-800 rounded-xl p-6 shadow-lg border border-green-400/30 hover:border-green-400 transition"
+    >
+      <h3 class="text-xl font-bold text-green-400 mb-2">
+        📊 Análisis de Audio
+      </h3>
+      <p class="text-gray-300">
+        🧠 Obtén BPM, key, espectro y volumen con herramientas de análisis
+        automático. ¡Perfecto para DJs pro!
+      </p>
+    </div>
+
+    <!-- 📁 Playlists -->
+    <div
+      class="bg-gray-800 rounded-xl p-6 shadow-lg border border-pink-400/30 hover:border-pink-400 transition"
+    >
+      <h3 class="text-xl font-bold text-pink-400 mb-2">
+        📁 Playlists Inteligentes
+      </h3>
+      <p class="text-gray-300">
+        🧩 Crea listas por género, energía, tags o situaciones. Organiza tu
+        música con lógica y estilo.
+      </p>
+    </div>
+
+    <!-- 🔗 Integraciones -->
+    <div
+      class="bg-gray-800 rounded-xl p-6 shadow-lg border border-cyan-400/30 hover:border-cyan-400 transition"
+    >
+      <h3 class="text-xl font-bold text-cyan-400 mb-2">🔗 Integraciones</h3>
+      <p class="text-gray-300">
+        🤝 Integra tu biblioteca con plataformas externas como Rekordbox,
+        Traktor o tu gestor de carpetas local.
+      </p>
+    </div>
+
+    <!-- 🚧 Más funciones -->
+    <div
+      class="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-500/30 hover:border-gray-500 transition"
+    >
+      <h3 class="text-xl font-bold text-gray-300 mb-2">🚧 Próximamente</h3>
+      <p class="text-gray-300">
+        🎯 Sugerencias inteligentes, análisis armónico, y más... Esta sección
+        sigue en evolución.
+      </p>
+    </div>
+  </div>
+</section>
+
+{% endblock content %}

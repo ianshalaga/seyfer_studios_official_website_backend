@@ -1,0 +1,127 @@
+{% extends 'dj/base.html' %} {% block content %}
+
+<h3 class="flex justify-center text-2xl font-bold text-red-400 mb-6">
+  🎧 Lista General de Canciones
+</h3>
+
+<div class="flex justify-center gap-6 mb-8">
+  <a
+    href="{% url 'dj:song_list' %}"
+    class="text-white font-bold text-xl hover:text-green-400 transition"
+    >🎶 Todas</a
+  >
+  <a
+    href="{% url 'dj:song_list' %}?state=YES"
+    class="text-white font-bold text-xl hover:text-green-400 transition"
+    >✅ Permitidas</a
+  >
+  <a
+    href="{% url 'dj:song_list' %}?state=BAN"
+    class="text-white font-bold text-xl hover:text-red-400 transition"
+    >⛔ Prohibidas</a
+  >
+  <a
+    href="{% url 'dj:song_list' %}?state=NEW"
+    class="text-white font-bold text-xl hover:text-yellow-400 transition"
+    >🆕 Pendientes</a
+  >
+</div>
+
+<!-- <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"> -->
+<div class="flex flex-col gap-4">
+  {% for song in songs %}
+  <div
+    class="bg-gray-800 p-6 rounded-2xl shadow-lg hover:bg-gray-700 transition space-y-4 border border-gray-700"
+  >
+    <div class="flex justify-between items-center">
+      <h4
+        class="text-xl font-bold {% if song.state == 'YES' %} text-green-400 {% elif song.state == 'BAN' %} text-red-400 {% else %} text-yellow-400 {% endif %}"
+      >
+        {% if song.state == 'YES' %}✅{% elif song.state == 'BAN' %}⛔{% else
+        %}🆕{% endif %} {{ song.title }}
+      </h4>
+      <div class="flex gap-2">
+        {% if user.is_authenticated %} {% if song.state != 'YES' %}
+        <form method="post" action="">
+          {% csrf_token %}
+          <button title="Permitir" class="hover:text-green-400 transition">
+            ✅
+          </button>
+        </form>
+        {% endif %} {% if song.state != 'BAN' %}
+        <form method="post" action="">
+          {% csrf_token %}
+          <button title="Prohibir" class="hover:text-red-400 transition">
+            ⛔
+          </button>
+        </form>
+        {% endif %} {% if song.state != 'NEW' %}
+        <form method="post" action="">
+          {% csrf_token %}
+          <button title="Pendiente" class="hover:text-yellow-400 transition">
+            🆕
+          </button>
+        </form>
+        {% endif %} {% endif %}
+      </div>
+    </div>
+
+    <div class="space-y-1">
+      <p class="text-sm text-blue-400">🎤 Artistas:</p>
+      {% for artist in song.artists.all %}
+      <div
+        class="flex justify-between items-center bg-gray-700 px-3 py-1 rounded-xl"
+      >
+        <span
+          class="text-sm font-semibold {% if artist.state == 'YES' %}text-green-300{% elif artist.state == 'BAN' %}text-red-300{% else %}text-yellow-300{% endif %}"
+        >
+          {% if artist.state == 'YES' %}✅{% elif artist.state == 'BAN' %}⛔{%
+          else %}🆕{% endif %} {{ artist.name }}
+        </span>
+        <div class="flex gap-2">
+          {% if user.is_authenticated %} {% if artist.state != 'YES' %}
+          <form method="post" action="">
+            {% csrf_token %}
+            <button
+              title="Permitir"
+              class="hover:text-green-400 transition text-sm"
+            >
+              ✅
+            </button>
+          </form>
+          {% endif %} {% if artist.state != 'BAN' %}
+          <form method="post" action="">
+            {% csrf_token %}
+            <button
+              title="Prohibir"
+              class="hover:text-red-400 transition text-sm"
+            >
+              ⛔
+            </button>
+          </form>
+          {% endif %} {% if artist.state != 'NEW' %}
+          <form method="post" action="">
+            {% csrf_token %}
+            <button
+              title="Pendiente"
+              class="hover:text-yellow-400 transition text-sm"
+            >
+              🆕
+            </button>
+          </form>
+          {% endif %} {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-gray-400 text-sm">❌ Sin artistas registrados.</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="text-gray-500 col-span-full text-center">
+    🎵 No hay canciones disponibles.
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock content %}

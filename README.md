@@ -2,6 +2,17 @@
 
 Seyfer Studios Official Website Backend code.
 
+## Routes
+
+<!-- - **Index**: `/` -->
+
+- **Admin**: `/admin`
+- **DJ**:
+  - **API**:
+    - `/api/dj/beatport`
+    - `/api/dj/beatport/artists/yes`
+    - `/api/dj/beatport/artists/ban`
+
 ## Módulos estándar (internos)
 
 - [os](https://docs.python.org/3/library/os.html): este módulo ofrece una forma portátil de utilizar funcionalidades dependientes del sistema operativo.

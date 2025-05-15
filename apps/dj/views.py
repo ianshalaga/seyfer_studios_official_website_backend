@@ -1,13 +1,49 @@
-import os
 from collections import defaultdict
 from django.http import JsonResponse
-from .models import Artist, SongArtistStateEnum
+from django.shortcuts import render
+from .models import Artist, SongArtistStateEnum, Song
 from termcolor import cprint
 from ..utilities.apps import dj
 from ..utilities.apps.exceptions import *
+from django.views import View
+from django.utils import timezone
 
 
 # Create your views here.
+
+
+# @@@@ TEMPLATES
+
+
+class IndexView(View):
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        context = {
+            "title": "Seyfer DJ Studio",
+            "now": timezone.now(),
+        }
+        return render(request, "dj/index.html", context)
+
+
+class SongListView(View):
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        # songs = Song.objects.filter(
+        #     state=SongArtistStateEnum.BAN).order_by("title")
+        songs = Song.objects.all().order_by("title")
+        context = {
+            "title": "Seyfer DJ Studio: Songs",
+            "now": timezone.now(),
+            "songs": songs,
+        }
+        return render(request, "dj/song_list.html", context)
+
+
+# @@@@ API
 
 
 def beatport_techno_top100_scraper(request):

@@ -1,0 +1,82 @@
+<!-- 🏠 Header -->
+
+<div class="container mx-auto flex items-center space-x-8">
+  <!-- 🎮 Logo -->
+  <h1
+    class="text-3xl font-rajdhani font-bold text-lime-400 tracking-wide text-outline"
+  >
+    🎮 Seyfer Studios
+  </h1>
+  <nav class="grid grid-cols-2 flex-1 space-x-1">
+    <div class="flex justify-left items-center space-x-2">
+      <!-- 🏡 Inicio -->
+      <a
+        href="{% url 'main:index' %}"
+        class="text-center font-semibold text-white px-3 py-1 rounded-lg hover:bg-zinc-900/50 hover:text-white transition"
+      >
+        🏡 Inicio
+      </a>
+      <!-- 🎮 Juegos -->
+      <span
+        class="text-center font-semibold text-gray-400 px-3 py-1 rounded-lg bg-zinc-700/50 cursor-not-allowed"
+        title="Próximamente disponible"
+      >
+        🎮 Juegos
+      </span>
+      <!-- 🎵 Música -->
+      <a
+        href=""
+        class="text-center font-semibold text-white px-3 py-1 rounded-lg hover:bg-zinc-900/50 hover:text-white transition"
+      >
+        🎵 Música
+      </a>
+      <!-- 📀 DJ -->
+      <a
+        href="{% url 'dj:index' %}"
+        class="text-center font-semibold text-white px-3 py-1 rounded-lg hover:bg-zinc-900/50 hover:text-white transition"
+      >
+        📀 DJ
+      </a>
+    </div>
+
+    <div class="flex items-center justify-end space-x-2">
+      {% if user.is_authenticated %}
+      <!-- 👤 Botón de Perfil -->
+      <a
+        href=""
+        class="flex items-center justify-center font-semibold text-white px-3 py-1 rounded-lg hover:bg-neutral-400 transition"
+      >
+        {% if user.avatar and user.avatar.image %}
+        <img
+          src="{{ user.avatar.image.url }}"
+          alt="User Avatar"
+          class="w-12 h-12 rounded-full mx-auto border-2 border-green-400"
+        />
+        {% else %} 👤 {% endif %}
+      </a>
+      <!-- 🔓 Botón de Logout -->
+      <a
+        href=""
+        class="font-semibold text-white px-3 py-1 rounded-lg hover:bg-red-600 transition"
+      >
+        🔓 Cerrar sesión ({{ user.username }})
+      </a>
+      {% else %}
+      <!-- 🔑 Botón de Login -->
+      <a
+        href=""
+        class="font-semibold text-white px-3 py-1 rounded-lg hover:bg-lime-600 transition"
+      >
+        🔑 Iniciar sesión
+      </a>
+      <!-- 📝 Botón de Signup -->
+      <a
+        href=""
+        class="font-semibold text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition"
+      >
+        📝 Registrarse
+      </a>
+      {% endif %}
+    </div>
+  </nav>
+</div>
