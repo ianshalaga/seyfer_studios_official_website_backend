@@ -6,7 +6,7 @@ from . import models
 
 @admin.register(models.Song)
 class SongAdmin(admin.ModelAdmin):
-    list_display = ["title", "state"]
+    list_display = ["title", "state", "link"]
     search_fields = ["title", "state", "artists__name"]
     list_filter = ["state", "artists__name"]
     ordering = ["title"]
@@ -14,7 +14,7 @@ class SongAdmin(admin.ModelAdmin):
 
 @admin.register(models.Artist)
 class ArtistAdmin(admin.ModelAdmin):
-    list_display = ["name", "state"]
+    list_display = ["name", "state", "link"]
     search_fields = ["name", "state", "songs__title"]
     list_filter = ["state", "songs__title"]
     ordering = ["name"]

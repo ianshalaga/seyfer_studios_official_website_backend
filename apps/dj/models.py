@@ -18,6 +18,7 @@ class Artist(models.Model):
     code = models.UUIDField(
         default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=100)
+    link = models.URLField(blank=True, null=True)
     state = models.CharField(
         max_length=STATE_MAX_LENGTH, choices=SongArtistStateEnum.choices)
 
@@ -29,6 +30,7 @@ class Song(models.Model):
     code = models.UUIDField(
         default=uuid.uuid4, editable=False, unique=True)
     title = models.CharField(max_length=100)
+    link = models.URLField(blank=True, null=True)
     state = models.CharField(
         max_length=STATE_MAX_LENGTH, choices=SongArtistStateEnum.choices)
     artists = models.ManyToManyField(Artist, related_name="songs")

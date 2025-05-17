@@ -1,27 +1,23 @@
 {% extends 'main/base.html' %} {% block main %}
 <!-- 🎚️ Subbarra de navegación interna DJ -->
 <nav
-  class="bg-gray-800 text-white rounded-lg shadow-md mb-6 p-4 border border-yellow-400/30 hover:border-yellow-400 transition"
+  class="bg-gray-800 text-white rounded-lg shadow-md mb-6 p-2 border border-yellow-400/30 hover:border-yellow-400 transition"
 >
   <ul class="flex flex-wrap space-x-4 justify-start">
     <li>
-      <a href="" class="hover:text-lime-400 transition font-semibold">
-        🔊 Beatport API
+      <a
+        href="{% url 'dj:index' %}"
+        class="hover:text-lime-400 transition font-semibold"
+      >
+        📀 Inicio
       </a>
     </li>
     <li>
-      <a href="" class="hover:text-lime-400 transition font-semibold">
+      <a
+        href="{% url 'dj:song_list' %}"
+        class="hover:text-lime-400 transition font-semibold"
+      >
         🎵 Canciones
-      </a>
-    </li>
-    <li>
-      <a href="" class="hover:text-lime-400 transition font-semibold">
-        📂 Playlists
-      </a>
-    </li>
-    <li>
-      <a href="" class="hover:text-lime-400 transition font-semibold">
-        📊 Analizar Tracks
       </a>
     </li>
   </ul>

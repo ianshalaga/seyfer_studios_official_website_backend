@@ -1,13 +1,16 @@
+# Python standar
 from collections import defaultdict
+# Django
 from django.http import JsonResponse
-from django.shortcuts import render
-from .models import Artist, SongArtistStateEnum, Song
-from termcolor import cprint
-from ..utilities.apps import dj
-from ..utilities.apps.exceptions import *
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.utils import timezone
-
+from .models import Artist, SongArtistStateEnum, Song
+# External
+from termcolor import cprint
+# Own
+from ..utilities.apps import dj
+from ..utilities.apps.exceptions import *
 
 # Create your views here.
 
@@ -32,15 +35,52 @@ class SongListView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        # songs = Song.objects.filter(
-        #     state=SongArtistStateEnum.BAN).order_by("title")
-        songs = Song.objects.all().order_by("title")
+        song_state = request.GET.get("state")
+        songs: list = list()
+        if not song_state:  # All songs
+            cprint(song_state, "blue")
+            songs = Song.objects.all().order_by("title")
+        elif song_state == "YES":  # Allowed songs
+            cprint(song_state, "green")
+            songs = Song.objects.filter(
+                state=SongArtistStateEnum.YES).order_by("title")
+        elif song_state == "BAN":  # Not allowed songs
+            cprint(song_state, "red")
+            songs = Song.objects.filter(
+                state=SongArtistStateEnum.BAN).order_by("title")
+        elif song_state == "NEW":  # New songs
+            cprint(song_state, "yellow")
+            songs = Song.objects.filter(
+                state=SongArtistStateEnum.NEW).order_by("title")
+
         context = {
             "title": "Seyfer DJ Studio: Songs",
             "now": timezone.now(),
             "songs": songs,
         }
         return render(request, "dj/song_list.html", context)
+
+
+class SongStateUpdateView(View):
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        song = get_object_or_404(Song, code=kwargs["code"])
+        song.state = kwargs["new_state"]
+        song.save()
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
+class ArtistStateUpdateView(View):
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        artist = get_object_or_404(Artist, code=kwargs["code"])
+        artist.state = kwargs["new_state"]
+        artist.save()
+        return redirect(request.META.get("HTTP_REFERER", "/"))
 
 
 # @@@@ API

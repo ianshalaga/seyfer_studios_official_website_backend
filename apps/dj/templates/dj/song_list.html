@@ -1,118 +1,179 @@
 {% extends 'dj/base.html' %} {% block content %}
 
-<h3 class="flex justify-center text-2xl font-bold text-red-400 mb-6">
-  🎧 Lista General de Canciones
+<h3 class="flex justify-center text-2xl font-bold text-lime-400 mb-6">
+  🎧 Canciones 🎧
 </h3>
 
-<div class="flex justify-center gap-6 mb-8">
+<div class="flex flex-wrap justify-center gap-6 mb-8">
   <a
     href="{% url 'dj:song_list' %}"
-    class="text-white font-bold text-xl hover:text-green-400 transition"
-    >🎶 Todas</a
+    class="text-white font-bold text-xl hover:text-blue-400 transition"
   >
+    🎶 Todas
+  </a>
+
   <a
     href="{% url 'dj:song_list' %}?state=YES"
     class="text-white font-bold text-xl hover:text-green-400 transition"
-    >✅ Permitidas</a
   >
+    ✅ Permitidas
+  </a>
+
   <a
     href="{% url 'dj:song_list' %}?state=BAN"
     class="text-white font-bold text-xl hover:text-red-400 transition"
-    >⛔ Prohibidas</a
   >
+    ⛔ Prohibidas
+  </a>
+
   <a
     href="{% url 'dj:song_list' %}?state=NEW"
     class="text-white font-bold text-xl hover:text-yellow-400 transition"
-    >🆕 Pendientes</a
   >
+    ⚠️ Pendientes
+  </a>
 </div>
 
-<!-- <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"> -->
-<div class="flex flex-col gap-4">
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <!-- <div class="flex flex-col gap-4"> -->
   {% for song in songs %}
+  <!-- Song card block -->
   <div
-    class="bg-gray-800 p-6 rounded-2xl shadow-lg hover:bg-gray-700 transition space-y-4 border border-gray-700"
+    class="bg-gray-800 p-6 rounded-2xl shadow-lg transition space-y-4 border border-gray-700"
   >
-    <div class="flex justify-between items-center">
+    <!-- Song card title block -->
+    <div class="flex flex-col gap-2 justify-between items-center">
+      <!-- Song card title text -->
       <h4
-        class="text-xl font-bold {% if song.state == 'YES' %} text-green-400 {% elif song.state == 'BAN' %} text-red-400 {% else %} text-yellow-400 {% endif %}"
+        class="font-semibold {% if song.state == 'YES' %} text-green-400 {% elif song.state == 'BAN' %} text-red-400 {% else %} text-yellow-400 {% endif %}"
       >
-        {% if song.state == 'YES' %}✅{% elif song.state == 'BAN' %}⛔{% else
-        %}🆕{% endif %} {{ song.title }}
+        <!-- Allowed song icon -->
+        {% if song.state == 'YES' %} ✅
+        <!-- Not allowed song icon -->
+        {% elif song.state == 'BAN' %} ⛔
+        <!-- New song icon -->
+        {% elif song.state == 'NEW' %} ⚠️
+        <!-- 4 -->
+        {% endif %}
+        <!-- Song title -->
+        {{ song.title }}
       </h4>
+
+      <!-- Song card title change state buttons -->
       <div class="flex gap-2">
         {% if user.is_authenticated %} {% if song.state != 'YES' %}
-        <form method="post" action="">
+        <form
+          method="post"
+          action="{% url 'dj:song_state_update' song.code 'YES' %}"
+        >
           {% csrf_token %}
-          <button title="Permitir" class="hover:text-green-400 transition">
-            ✅
+          <button
+            title="Permitir"
+            class="bg-green-800 text-xs border border-green-400 rounded-xl p-2 transition hover:bg-green-700"
+          >
+            ✅ Permitir
           </button>
         </form>
         {% endif %} {% if song.state != 'BAN' %}
-        <form method="post" action="">
+        <form
+          method="post"
+          action="{% url 'dj:song_state_update' song.code 'BAN' %}"
+        >
           {% csrf_token %}
-          <button title="Prohibir" class="hover:text-red-400 transition">
-            ⛔
+          <button
+            title="Prohibir"
+            class="bg-red-800 text-xs border border-red-400 rounded-xl p-2 transition hover:bg-red-700"
+          >
+            ⛔ Prohibir
           </button>
         </form>
         {% endif %} {% if song.state != 'NEW' %}
-        <form method="post" action="">
+        <form
+          method="post"
+          action="{% url 'dj:song_state_update' song.code 'NEW' %}"
+        >
           {% csrf_token %}
-          <button title="Pendiente" class="hover:text-yellow-400 transition">
-            🆕
+          <button
+            title="Indefinir"
+            class="bg-yellow-800 text-xs border border-yellow-400 rounded-xl p-2 transition hover:bg-yellow-700"
+          >
+            ⚠️ Indefinir
           </button>
         </form>
         {% endif %} {% endif %}
       </div>
     </div>
 
-    <div class="space-y-1">
-      <p class="text-sm text-blue-400">🎤 Artistas:</p>
-      {% for artist in song.artists.all %}
+    <!-- Song card artist block -->
+    <div class="flex flex-col items-center gap-4 space-y-1">
+      <p class="font-bold text-blue-400">🎤 Artistas 🎤</p>
+      {% for artist in song.artists.all %} {% if artist.name != "" %}
       <div
-        class="flex justify-between items-center bg-gray-700 px-3 py-1 rounded-xl"
+        class="flex w-max gap-4 justify-between items-center bg-gray-700 px-3 py-1 rounded-xl"
       >
         <span
-          class="text-sm font-semibold {% if artist.state == 'YES' %}text-green-300{% elif artist.state == 'BAN' %}text-red-300{% else %}text-yellow-300{% endif %}"
+          class="text-sm font-semibold {% if artist.state == 'YES' %} text-green-300 {% elif artist.state == 'BAN' %} text-red-300 {% else %} text-yellow-300 {% endif %}"
         >
-          {% if artist.state == 'YES' %}✅{% elif artist.state == 'BAN' %}⛔{%
-          else %}🆕{% endif %} {{ artist.name }}
+          <!--  -->
+          {% if artist.state == 'YES' %} ✅
+          <!--  -->
+          {% elif artist.state == 'BAN' %} ⛔
+          <!--  -->
+          {% elif artist.state == 'NEW' %} ⚠️
+          <!--  -->
+          {% endif %}
+          <!--  -->
+          {{ artist.name }}
         </span>
+
         <div class="flex gap-2">
           {% if user.is_authenticated %} {% if artist.state != 'YES' %}
-          <form method="post" action="">
+          <form
+            method="post"
+            action="{% url 'dj:artist_state_update' artist.code 'YES' %}"
+          >
             {% csrf_token %}
             <button
               title="Permitir"
-              class="hover:text-green-400 transition text-sm"
+              class="bg-green-800 text-xs border border-green-400 rounded-xl p-2 transition hover:bg-green-700"
             >
-              ✅
+              ✅ Permitir
             </button>
           </form>
           {% endif %} {% if artist.state != 'BAN' %}
-          <form method="post" action="">
+          <form
+            method="post"
+            action="{% url 'dj:artist_state_update' artist.code 'BAN' %}"
+          >
             {% csrf_token %}
             <button
               title="Prohibir"
-              class="hover:text-red-400 transition text-sm"
+              class="bg-red-800 text-xs border border-red-400 rounded-xl p-2 transition hover:bg-red-700"
             >
-              ⛔
+              ⛔ Prohibir
             </button>
           </form>
           {% endif %} {% if artist.state != 'NEW' %}
-          <form method="post" action="">
+          <form
+            method="post"
+            action="{% url 'dj:artist_state_update' artist.code 'NEW' %}"
+          >
             {% csrf_token %}
             <button
               title="Pendiente"
-              class="hover:text-yellow-400 transition text-sm"
+              class="bg-yellow-800 text-xs border border-yellow-400 rounded-xl p-2 transition hover:bg-yellow-700"
             >
-              🆕
+              ⚠️ Indefinir
             </button>
           </form>
           {% endif %} {% endif %}
         </div>
       </div>
-      {% empty %}
+      {% else %}
+      <div class="text-gray-500 col-span-full text-center">
+        <p class="text-gray-400 text-sm">❌ Sin artistas registrados.</p>
+      </div>
+      {% endif %} {% empty %}
       <p class="text-gray-400 text-sm">❌ Sin artistas registrados.</p>
       {% endfor %}
     </div>
