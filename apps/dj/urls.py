@@ -7,6 +7,7 @@ urlpatterns = [
     # TEMPLATES
     path("", views.IndexView.as_view(), name="index"),
     path("song/list", views.SongListView.as_view(), name="song_list"),
+    #
     path("song/<uuid:code>/state/<str:new_state>",
          views.SongStateUpdateView.as_view(), name="song_state_update"),
     path("artist/<uuid:code>/state/<str:new_state>",
