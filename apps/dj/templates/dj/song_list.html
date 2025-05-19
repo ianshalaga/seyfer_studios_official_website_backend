@@ -57,6 +57,10 @@
         {% endif %}
         <!-- Song title -->
         {{ song.title }}
+        <!-- Song link -->
+        <a href="{{ song.link }}" target="_blank" rel="noopener noreferrer"
+          >🔗</a
+        >
       </h4>
 
       <!-- Song card title change state buttons -->
@@ -105,11 +109,11 @@
     </div>
 
     <!-- Song card artist block -->
-    <div class="flex flex-col items-center gap-4 space-y-1">
+    <div class="flex flex-col items-left gap-4 space-y-1">
       <p class="font-bold text-blue-400">🎤 Artistas 🎤</p>
       {% for artist in song.artists.all %} {% if artist.name != "" %}
       <div
-        class="flex w-max gap-4 justify-between items-center bg-gray-700 px-3 py-1 rounded-xl"
+        class="flex gap-4 justify-between items-center bg-gray-700 px-3 py-1 rounded-xl"
       >
         <span
           class="text-sm font-semibold {% if artist.state == 'YES' %} text-green-300 {% elif artist.state == 'BAN' %} text-red-300 {% else %} text-yellow-300 {% endif %}"
@@ -124,6 +128,10 @@
           {% endif %}
           <!--  -->
           {{ artist.name }}
+          <!--  -->
+          <a href="{{ artist.link }}" target="_blank" rel="noopener noreferrer"
+            >🔗</a
+          >
         </span>
 
         <div class="flex gap-2">

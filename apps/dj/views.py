@@ -38,18 +38,14 @@ class SongListView(View):
         song_state = request.GET.get("state")
         songs: list = list()
         if not song_state:  # All songs
-            cprint(song_state, "blue")
             songs = Song.objects.all().order_by("title")
         elif song_state == "YES":  # Allowed songs
-            cprint(song_state, "green")
             songs = Song.objects.filter(
                 state=SongArtistStateEnum.YES).order_by("title")
         elif song_state == "BAN":  # Not allowed songs
-            cprint(song_state, "red")
             songs = Song.objects.filter(
                 state=SongArtistStateEnum.BAN).order_by("title")
         elif song_state == "NEW":  # New songs
-            cprint(song_state, "yellow")
             songs = Song.objects.filter(
                 state=SongArtistStateEnum.NEW).order_by("title")
 
