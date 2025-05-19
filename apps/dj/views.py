@@ -93,6 +93,7 @@ def beatport_techno_top100_scraper(request):
             dj.BEATPORT_TECHNO_TOP100_URL)
 
         artists_ban: list[str] = dj.get_db_artists_banned()
+        artists_yes: list[str] = dj.get_db_artists_allowed()
 
         artists_url_set: set = set()
 
@@ -113,25 +114,53 @@ def beatport_techno_top100_scraper(request):
 
         songs_list.extend(songs_list_by_artist)
 
-        artists_names_set: set[str] = {
-            artist["name"]
-            for song in songs_list
-            for artist in song["artists"]
-            if artist["name"] not in artists_ban
-        }
+        songs_urls_set: set = set()
+        songs_final_list: list = list()
+        repeated_songs: int = 0
 
-        artists_names_list: list[str] = list(artists_names_set)
+        for song in songs_list:
+            if song["url"] not in songs_urls_set:
+                songs_urls_set.add(song["url"])
+                songs_final_list.append(song)
+            else:
+                repeated_songs += 1
+                cprint(
+                    f"Repeated song: {song['url']} | Total: {repeated_songs}", "yellow")
 
-        response_dict_sets: dict = defaultdict(set)
-        for artist in artists_names_list:
-            for song in songs_list:
-                if artist in [art["name"] for art in song["artists"]]:
-                    response_dict_sets[artist].add(song["url"])
+        for song in songs_final_list:
+            artists_db_list: list = list()
+            for artist in song["artists"]:
+                if artist["name"] in artists_ban:
+                    artist_db, _ = Artist.objects.update_or_create(
+                        name=artist["name"],
+                        link=artist["url"],
+                        state=SongArtistStateEnum.BAN,
+                    )
+                elif artist["name"] in artists_yes:
+                    artist_db, _ = Artist.objects.update_or_create(
+                        name=artist["name"],
+                        link=artist["url"],
+                        state=SongArtistStateEnum.YES,
+                    )
+                else:
+                    artist_db, _ = Artist.objects.update_or_create(
+                        name=artist["name"],
+                        link=artist["url"],
+                        state=SongArtistStateEnum.NEW,
+                    )
 
-        response_dict_lists: dict = dict(sorted({artist: sorted(
-            songs) for artist, songs in response_dict_sets.items()}.items()))
+                artists_db_list.append(artist_db)
 
-        return JsonResponse(response_dict_lists)  # safe=False
+            song_db, _ = Song.objects.update_or_create(
+                title=song["name"],
+                link=song["url"],
+                defaults={"state": SongArtistStateEnum.NEW},
+            )
+
+            song_db.artists.set(artists_db_list)
+            song_db.save()
+
+        return JsonResponse({"status": "success"})  # safe=False
     except (DynamicRequestError, ScraperError, DatabaseAccessError) as e:
         error: str = f"{__name__} | {beatport_techno_top100_scraper.__name__} | {e}"
         cprint(error, "red")

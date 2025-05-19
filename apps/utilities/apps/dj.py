@@ -225,8 +225,10 @@ def beatport_songs_artists_scraper(beatport_url: str):
 
             # For each artist html a tag in block
             for artist_html_tag_a in artists_html_block.select("a"):
+                # Get artist name
                 artist_name: str = artist_html_tag_a.get(
-                    "title")  # Get artist name
+                    "title"
+                )
 
                 if not artist_name:
                     raise ScraperError(
@@ -242,31 +244,40 @@ def beatport_songs_artists_scraper(beatport_url: str):
                     raise ScraperError(
                         f"{__name__} | {beatport_songs_artists_scraper.__name__} | No artist url found")
 
+                # Create beatport artist instance
                 beatport_artist = BeatportArtist(
-                    artist_name, artist_url)  # Create beatport artist instance
+                    artist_name,
+                    artist_url
+                )
 
                 artists_list.append(beatport_artist.serialize())
 
-            if not allowed_song:  # All artist must be YES to allow the song
+            if not allowed_song:  # When all artists are banned
                 songs_not_allowed += 1
                 continue
 
             song_url = "".join(
-                [BEATPORT_URL_BASE, song_html_block.select_one("a").get("href")])
+                [
+                    BEATPORT_URL_BASE,
+                    song_html_block.select_one("a").get("href")
+                ]
+            )
 
             if not song_url:
                 raise ScraperError(
                     f"{__name__} | {beatport_songs_artists_scraper.__name__} | No song url found")
 
             song_html_tag_span = song_html_block.select_one(
-                scrap_html_tag_span.serialize())
+                scrap_html_tag_span.serialize()
+            )
 
             if not song_html_tag_span:
                 raise ScraperError(
                     f"{__name__} | {beatport_songs_artists_scraper.__name__} | No song title found")
 
             song_title_variation: tuple[str] = tuple(
-                song_html_tag_span.stripped_strings)
+                song_html_tag_span.stripped_strings
+            )
 
             if len(song_title_variation) != 2:
                 raise ScraperError(
@@ -304,6 +315,18 @@ def get_db_artists_banned():
         artists_ban: list[str] = [artist_db.name for artist_db in Artist.objects.filter(
             state=SongArtistStateEnum.BAN)]  # Get database artists banned
         return artists_ban
+    except Exception as e:
+        raise DatabaseAccessError(
+            colored(
+                f"{__name__} | {get_db_artists_banned.__name__} | {repr(e)}", "red")
+        )
+
+
+def get_db_artists_allowed():
+    try:
+        artists_yes: list[str] = [artist_db.name for artist_db in Artist.objects.filter(
+            state=SongArtistStateEnum.YES)]  # Get database artists allowed
+        return artists_yes
     except Exception as e:
         raise DatabaseAccessError(
             colored(
