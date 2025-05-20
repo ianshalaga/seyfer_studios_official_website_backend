@@ -64,16 +64,12 @@ class BeatportSong():
         self.__artists = artists
 
     def name(self) -> str:
-        try:
-            name: str = ""
-            if "(" in self.__title and ")" in self.__title:
-                name = " ".join([self.__title, f"[{self.__variation}]"])
-            else:
-                name = " ".join([self.__title, f"({self.__variation})"])
-            return name
-        except Exception as e:
-            print(
-                f"{__class__} | {__name__} | Ocurrió un error inesperado: {repr(e)}")
+        name: str = ""
+        if "(" in self.__title and ")" in self.__title:
+            name = " ".join([self.__title, f"[{self.__variation}]"])
+        else:
+            name = " ".join([self.__title, f"({self.__variation})"])
+        return name
 
     def get_url(self):
         return self.__url
@@ -139,175 +135,166 @@ def mp3_load_metadata_into_db() -> None:  # @@@@
             else:
                 print(f"⚠ Existing: {mp3_title} by {", ".join(mp3_artists)}")
     except Exception as e:
-        # print(f"{__name__}: {e}")
-        print(f"{mp3_load_metadata_into_db.__name__}: {e}")
+        error = build_detailed_error(e)
+        cprint(error, "red")
 
 
 def request_dynamic(url: str, delay: int = 5) -> str:
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    browser = webdriver.Chrome(options=options)
+
     try:
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
-        browser = webdriver.Chrome(options=options)
         browser.get(url)
         time.sleep(delay)  # Waiting for JS to load
         html = browser.page_source
         if not html:
             raise DynamicRequestError(
-                f"{__name__} | {request_dynamic.__name__} | {url} | {html}"
+                f"Invalid HTML | URL: {url} | Delay: {delay}"
             )
-        browser.quit()
         return html
-    except DynamicRequestError:
-        raise
     except Exception as e:
-        raise e
+        raise DynamicRequestError(f"Failed to request {url}") from e
+    finally:
+        browser.quit()
 
 
 def beatport_songs_artists_scraper(beatport_url: str):
     try:
-        try:
-            artists_ban: list[str] = get_db_artists_banned()
-            songs_yes: list[str] = get_db_songs_allowed()
-            songs_ban: list[str] = get_db_songs_not_allowed()
-        except Exception as e:
-            raise DatabaseAccessError(
-                f"{__name__} | {beatport_songs_artists_scraper.__name__} | {e}"
-            )
-
-        scrap_html_songs_blocks = ScrapHtml(
-            "div",
-            "Lists-shared-style__MetaRow-sc-cd3f7e11-4"
-        )
-        scrap_html_artist_block = ScrapHtml(
-            "div",
-            "ArtistNames-sc-72fc6023-0"
-        )
-        scrap_html_tag_span = ScrapHtml(
-            "span",
-            "Lists-shared-style__ItemName-sc-cd3f7e11-7"
-        )
-
-        songs_allowed: int = 0
-        songs_not_allowed: int = 0
-
-        html: str = request_dynamic(beatport_url)
-
-        if scrap_html_songs_blocks.get_css_class() not in html:
-            raise ScraperError(
-                f"{__name__} | {beatport_songs_artists_scraper.__name__} | Invalid HTML")
-
-        soup = BeautifulSoup(
-            html, "html.parser")  # Parse HTML with bs4
-
-        if not soup:
-            raise ScraperError(
-                f"{__name__} | {beatport_songs_artists_scraper.__name__} | HTML parse failed")
-
-        songs_html_blocks = soup.select(
-            scrap_html_songs_blocks.serialize())  # Get all songs html blocks
-
-        if not songs_html_blocks:
-            raise ScraperError(
-                f"{__name__} | {beatport_songs_artists_scraper.__name__} | No songs found")
-
-        songs_list: list[dict] = list()
-
-        for song_html_block in songs_html_blocks:  # For each song html block
-            artists_html_block = song_html_block.select_one(
-                scrap_html_artist_block.serialize())  # Get artists html block
-
-            if not artists_html_block:
-                raise ScraperError(
-                    f"{__name__} | {beatport_songs_artists_scraper.__name__} | No artists found")
-
-            artists_list: list[dict] = list()
-            allowed_song: bool = False
-
-            # For each artist html a tag in block
-            for artist_html_tag_a in artists_html_block.select("a"):
-                # Get artist name
-                artist_name: str = artist_html_tag_a.get(
-                    "title"
-                )
-
-                if not artist_name:
-                    raise ScraperError(
-                        f"{__name__} | {beatport_songs_artists_scraper.__name__} | No artist name found")
-
-                if artist_name not in artists_ban:  # One allowed artist is enough to allowed the song
-                    allowed_song = True
-
-                artist_url: str = "".join(
-                    [BEATPORT_URL_BASE, artist_html_tag_a.get("href")])
-
-                if artist_url == BEATPORT_URL_BASE:
-                    raise ScraperError(
-                        f"{__name__} | {beatport_songs_artists_scraper.__name__} | No artist url found")
-
-                # Create beatport artist instance
-                beatport_artist = BeatportArtist(
-                    artist_name,
-                    artist_url
-                )
-
-                artists_list.append(beatport_artist.serialize())
-
-            if not allowed_song:  # When all artists are banned
-                songs_not_allowed += 1
-                continue
-
-            song_url = "".join(
-                [
-                    BEATPORT_URL_BASE,
-                    song_html_block.select_one("a").get("href")
-                ]
-            )
-
-            if not song_url:
-                raise ScraperError(
-                    f"{__name__} | {beatport_songs_artists_scraper.__name__} | No song url found")
-
-            song_html_tag_span = song_html_block.select_one(
-                scrap_html_tag_span.serialize()
-            )
-
-            if not song_html_tag_span:
-                raise ScraperError(
-                    f"{__name__} | {beatport_songs_artists_scraper.__name__} | No song title found")
-
-            song_title_variation: tuple[str] = tuple(
-                song_html_tag_span.stripped_strings
-            )
-
-            if len(song_title_variation) != 2:
-                raise ScraperError(
-                    f"{__name__} | {beatport_songs_artists_scraper.__name__} | Invalid song title variation")
-
-            song_title: str = song_title_variation[0]
-            song_variation: str = song_title_variation[1]
-            beatport_song = BeatportSong(song_title, song_variation, song_url)
-
-            if beatport_song.name() in songs_yes or beatport_song.name() in songs_ban:
-                songs_not_allowed += 1
-                continue
-
-            beatport_song.set_artists(artists_list)
-            songs_list.append(beatport_song.serialize())
-            songs_allowed += 1
-
-        cprint(f"🎶 Songs total: {songs_allowed + songs_not_allowed}", "blue")
-        cprint(f"✅ Songs allowed: {songs_allowed}", "green")
-        cprint(f"❌ Songs not allowed: {songs_not_allowed}", "red")
-
-        return songs_list
-    except ScraperError:
-        raise
-    except DatabaseAccessError:
-        raise
-    except DynamicRequestError:
-        raise
+        artists_ban: list[str] = get_db_artists_banned()
+        songs_yes: list[str] = get_db_songs_allowed()
+        songs_ban: list[str] = get_db_songs_not_allowed()
     except Exception as e:
-        raise e
+        raise DatabaseAccessError("Database access error") from e
+
+    # Scraping criteria
+    scrap_html_songs_blocks = ScrapHtml(
+        "div",
+        "Lists-shared-style__MetaRow-sc-cd3f7e11-4"
+    )
+
+    scrap_html_artist_block = ScrapHtml(
+        "div",
+        "ArtistNames-sc-72fc6023-0"
+    )
+
+    scrap_html_tag_span = ScrapHtml(
+        "span",
+        "Lists-shared-style__ItemName-sc-cd3f7e11-7"
+    )
+
+    songs_allowed: int = 0
+    songs_not_allowed: int = 0
+
+    html: str = request_dynamic(beatport_url)  # Getting HTML
+
+    if scrap_html_songs_blocks.get_css_class() not in html:
+        raise ScraperError(
+            f"{__name__} | {beatport_songs_artists_scraper.__name__} | Invalid HTML. Scraping criteria may have changed")
+
+    soup = BeautifulSoup(html, "html.parser")  # Parse HTML with bs4
+
+    if not soup:
+        raise ScraperError(
+            f"{__name__} | {beatport_songs_artists_scraper.__name__} | HTML parse failed")
+
+    songs_html_blocks = soup.select(
+        scrap_html_songs_blocks.serialize())  # Get all songs html blocks
+
+    if not songs_html_blocks:
+        raise ScraperError(
+            f"{__name__} | {beatport_songs_artists_scraper.__name__} | No songs found")
+
+    songs_list: list[dict] = list()
+
+    for song_html_block in songs_html_blocks:  # For each song html block
+        artists_html_block = song_html_block.select_one(
+            scrap_html_artist_block.serialize())  # Get artists html block
+
+        if not artists_html_block:
+            raise ScraperError(
+                f"{__name__} | {beatport_songs_artists_scraper.__name__} | No artists found")
+
+        artists_list: list[dict] = list()
+        allowed_song: bool = False
+
+        # For each artist html a tag in block
+        for artist_html_tag_a in artists_html_block.select("a"):
+            # Get artist name
+            artist_name: str = artist_html_tag_a.get(
+                "title"
+            )
+
+            if not artist_name:
+                raise ScraperError(
+                    f"{__name__} | {beatport_songs_artists_scraper.__name__} | No artist name found")
+
+            if artist_name not in artists_ban:  # One allowed artist is enough to allowed the song
+                allowed_song = True
+
+            artist_url: str = "".join(
+                [BEATPORT_URL_BASE, artist_html_tag_a.get("href")])
+
+            if artist_url == BEATPORT_URL_BASE:
+                raise ScraperError(
+                    f"{__name__} | {beatport_songs_artists_scraper.__name__} | No artist url found")
+
+            # Create beatport artist instance
+            beatport_artist = BeatportArtist(
+                artist_name,
+                artist_url
+            )
+
+            artists_list.append(beatport_artist.serialize())
+
+        if not allowed_song:  # When all artists are banned
+            songs_not_allowed += 1
+            continue
+
+        song_url = "".join(
+            [
+                BEATPORT_URL_BASE,
+                song_html_block.select_one("a").get("href")
+            ]
+        )
+
+        if not song_url:
+            raise ScraperError(
+                f"{__name__} | {beatport_songs_artists_scraper.__name__} | No song url found")
+
+        song_html_tag_span = song_html_block.select_one(
+            scrap_html_tag_span.serialize()
+        )
+
+        if not song_html_tag_span:
+            raise ScraperError(
+                f"{__name__} | {beatport_songs_artists_scraper.__name__} | No song title found")
+
+        song_title_variation: tuple[str] = tuple(
+            song_html_tag_span.stripped_strings
+        )
+
+        if len(song_title_variation) != 2:
+            raise ScraperError(
+                f"{__name__} | {beatport_songs_artists_scraper.__name__} | Invalid song title variation")
+
+        song_title: str = song_title_variation[0]
+        song_variation: str = song_title_variation[1]
+        beatport_song = BeatportSong(song_title, song_variation, song_url)
+
+        if beatport_song.name() in songs_yes or beatport_song.name() in songs_ban:
+            songs_not_allowed += 1
+            continue
+
+        beatport_song.set_artists(artists_list)
+        songs_list.append(beatport_song.serialize())
+        songs_allowed += 1
+
+    cprint(f"🎶 Songs total: {songs_allowed + songs_not_allowed}", "blue")
+    cprint(f"✅ Songs allowed: {songs_allowed}", "green")
+    cprint(f"❌ Songs not allowed: {songs_not_allowed}", "red")
+
+    return songs_list
 
 
 def get_db_artists_banned():
@@ -316,10 +303,7 @@ def get_db_artists_banned():
             state=SongArtistStateEnum.BAN)]  # Get database artists banned
         return artists_ban
     except Exception as e:
-        raise DatabaseAccessError(
-            colored(
-                f"{__name__} | {get_db_artists_banned.__name__} | {repr(e)}", "red")
-        )
+        raise DatabaseAccessError(f"Error getting artists banned") from e
 
 
 def get_db_artists_allowed():
@@ -328,10 +312,7 @@ def get_db_artists_allowed():
             state=SongArtistStateEnum.YES)]  # Get database artists allowed
         return artists_yes
     except Exception as e:
-        raise DatabaseAccessError(
-            colored(
-                f"{__name__} | {get_db_artists_banned.__name__} | {repr(e)}", "red")
-        )
+        raise DatabaseAccessError(f"Error getting artists allowed") from e
 
 
 def get_db_songs_allowed():
@@ -340,10 +321,7 @@ def get_db_songs_allowed():
             state=SongArtistStateEnum.YES)]  # Get database songs allowed
         return songs_yes
     except Exception as e:
-        raise DatabaseAccessError(
-            colored(
-                f"{__name__} | {get_db_artists_banned.__name__} | {repr(e)}", "red")
-        )
+        raise DatabaseAccessError(f"Error getting songs allowed") from e
 
 
 def get_db_songs_not_allowed():
@@ -352,7 +330,4 @@ def get_db_songs_not_allowed():
             state=SongArtistStateEnum.BAN)]  # Get database songs allowed
         return songs_ban
     except Exception as e:
-        raise DatabaseAccessError(
-            colored(
-                f"{__name__} | {get_db_artists_banned.__name__} | {repr(e)}", "red")
-        )
+        raise DatabaseAccessError(f"Error getting songs banned") from e
