@@ -69,6 +69,18 @@ class SongStateUpdateView(View):
 
 
 class ArtistStateUpdateView(View):
+    def update_songs_state_by_artists_state(self):
+        songs = Song.objects.filter(state=SongArtistStateEnum.NEW)
+        for song in songs:
+            artists_ban: bool = True
+            for artist in song.artists.all():
+                if artist.state != SongArtistStateEnum.BAN:
+                    artists_ban = False
+                    break
+            if artists_ban:
+                song.state = SongArtistStateEnum.BAN
+                song.save()
+
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
@@ -76,6 +88,7 @@ class ArtistStateUpdateView(View):
         artist = get_object_or_404(Artist, code=kwargs["code"])
         artist.state = kwargs["new_state"]
         artist.save()
+        self.update_songs_state_by_artists_state()
         return redirect(request.META.get("HTTP_REFERER", "/"))
 
 
